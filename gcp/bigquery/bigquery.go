@@ -10,10 +10,13 @@ import (
 	"google.golang.org/api/option"
 )
 
+// BigQuery is BigQuery operation structure
 type BigQuery struct {
+	// Through Client property when wanna use base bigquery function
 	Client *bigquery.Client
 }
 
+// New return BigQuery instance
 func New(projectID string, opts ...option.ClientOption) (*BigQuery, error) {
 	c, err := bigquery.NewClient(context.Background(), projectID, opts...)
 	if err != nil {
@@ -25,10 +28,11 @@ func New(projectID string, opts ...option.ClientOption) (*BigQuery, error) {
 	}, nil
 }
 
-func (bq *BigQuery) Query(query string) (columns []string, contents [][]string, err error) {
+// Query is execute query.  returns columns, contents, error
+func (bq *BigQuery) Query(ctx context.Context, query string) (columns []string, contents [][]string, err error) {
 	q := bq.Client.Query(query)
 
-	it, err := q.Read(context.Background())
+	it, err := q.Read(ctx)
 	if err != nil {
 		return nil, nil, err
 	}

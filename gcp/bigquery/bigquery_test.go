@@ -1,6 +1,7 @@
 package bigquery
 
 import (
+	"context"
 	"testing"
 )
 
@@ -15,7 +16,7 @@ func TestSuccess(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cols, contents, err := bq.Query(selectQuery)
+	cols, contents, err := bq.Query(context.Background(), selectQuery)
 	if err != nil {
 		t.Fatal(err)
 	}
