@@ -71,6 +71,17 @@ func (bq *BigQuery) Query(ctx context.Context, query string, queryOpts ...QueryO
 		return nil, nil, err
 	}
 
+	if qc.isDryRun {
+		job, err := q.Run(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		*qc.jobStatistics = *job.LastStatus().Statistics
+
+		return nil, nil, nil
+	}
+
 	it, err := q.Read(ctx)
 	if err != nil {
 		return nil, nil, err
