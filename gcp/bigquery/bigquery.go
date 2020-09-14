@@ -29,7 +29,7 @@ func New(projectID string, opts ...option.ClientOption) (*BigQuery, error) {
 }
 
 // Execute is execute query. returns error
-func (bq *BigQuery) Execute(ctx context.Context, query string, queryOpts ...queryOption) error {
+func (bq *BigQuery) Execute(ctx context.Context, query string, queryOpts ...QueryOption) error {
 	qc, err := createQueryConfig(queryOpts...)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (bq *BigQuery) Execute(ctx context.Context, query string, queryOpts ...quer
 }
 
 // Query is execute query. returns columns, contents, error
-func (bq *BigQuery) Query(ctx context.Context, query string, queryOpts ...queryOption) (columns []string, contents [][]string, err error) {
+func (bq *BigQuery) Query(ctx context.Context, query string, queryOpts ...QueryOption) (columns []string, contents [][]string, err error) {
 	qc, err := createQueryConfig(queryOpts...)
 	if err != nil {
 		return nil, nil, err
