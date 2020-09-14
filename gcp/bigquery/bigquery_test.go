@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	projectID    = "test-project"
-	subProjectID = "test-project"
+	projectID    = "infra-falcon-262905"
+	subProjectID = "test-project01-289306"
 	selectQuery  = "select name, age from `test_dataset.test_table`"
 )
 
@@ -39,42 +39,42 @@ func TestSuccess(t *testing.T) {
 	})
 
 	t.Run("QueryCopyCreateIfNeededWriteTruncate", func(t *testing.T) {
-		err = mainBQ.QueryCopyCreateIfNeededWriteTruncate(context.Background(), selectQuery, subBQ, "test_dataset", "test_table2")
+		err = mainBQ.Execute(context.Background(), selectQuery, QueryOptionDstTable(subBQ, "test_dataset", "test_table2"))
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("QueryCopyCreateIfNeededWriteAppend", func(t *testing.T) {
-		err = mainBQ.QueryCopyCreateIfNeededWriteAppend(context.Background(), selectQuery, subBQ, "test_dataset", "test_table2")
+		err = mainBQ.Execute(context.Background(), selectQuery, QueryOptionDstTable(subBQ, "test_dataset", "test_table2"), QueryOptionWriteAppend())
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("QueryCopyCreateIfNeededWriteEmpty", func(t *testing.T) {
-		err = mainBQ.QueryCopyCreateIfNeededWriteEmpty(context.Background(), selectQuery, subBQ, "test_dataset", "test_table2")
+		err = mainBQ.Execute(context.Background(), selectQuery, QueryOptionDstTable(subBQ, "test_dataset", "test_table2"), QueryOptionWriteEmpty())
 		if err == nil {
 			t.Error("Bug. Table already contains data. But returns not error")
 		}
 	})
 
 	t.Run("QueryCopyCreateNeverWriteTruncate", func(t *testing.T) {
-		err = mainBQ.QueryCopyCreateNeverWriteTruncate(context.Background(), selectQuery, subBQ, "test_dataset", "test_table2")
+		err = mainBQ.Execute(context.Background(), selectQuery, QueryOptionDstTable(subBQ, "test_dataset", "test_table2"), QueryOptionCreateNever())
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("QueryCopyCreateNeverWriteAppend", func(t *testing.T) {
-		err = mainBQ.QueryCopyCreateNeverWriteAppend(context.Background(), selectQuery, subBQ, "test_dataset", "test_table2")
+		err = mainBQ.Execute(context.Background(), selectQuery, QueryOptionDstTable(subBQ, "test_dataset", "test_table2"), QueryOptionCreateNever(), QueryOptionWriteAppend())
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("QueryCopyCreateNeverWriteEmpty", func(t *testing.T) {
-		err = mainBQ.QueryCopyCreateNeverWriteEmpty(context.Background(), selectQuery, subBQ, "test_dataset", "test_table2")
+		err = mainBQ.Execute(context.Background(), selectQuery, QueryOptionDstTable(subBQ, "test_dataset", "test_table2"), QueryOptionCreateNever(), QueryOptionWriteEmpty())
 		if err == nil {
 			t.Error("Bug. Table already contains data. But returns not error")
 		}
