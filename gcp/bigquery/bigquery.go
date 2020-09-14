@@ -30,9 +30,25 @@ func New(projectID string, opts ...option.ClientOption) (*BigQuery, error) {
 
 // Execute is execute query. returns error
 func (bq *BigQuery) Execute(ctx context.Context, query string, queryOpts ...queryOption) error {
-	q, err := bq.createQuery(query, queryOpts...)
+	qc, err := createQueryConfig(queryOpts...)
 	if err != nil {
 		return err
+	}
+
+	q, err := bq.createQuery(ctx, query, qc)
+	if err != nil {
+		return err
+	}
+
+	if qc.isDryRun {
+		job, err := q.Run(ctx)
+		if err != nil {
+			return err
+		}
+
+		*qc.jobStatistics = *job.LastStatus().Statistics
+
+		return nil
 	}
 
 	_, err = q.Read(ctx)
@@ -45,7 +61,12 @@ func (bq *BigQuery) Execute(ctx context.Context, query string, queryOpts ...quer
 
 // Query is execute query. returns columns, contents, error
 func (bq *BigQuery) Query(ctx context.Context, query string, queryOpts ...queryOption) (columns []string, contents [][]string, err error) {
-	q, err := bq.createQuery(query, queryOpts...)
+	qc, err := createQueryConfig(queryOpts...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	q, err := bq.createQuery(ctx, query, qc)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -82,26 +103,21 @@ func (bq *BigQuery) Query(ctx context.Context, query string, queryOpts ...queryO
 	return columns, contents, nil
 }
 
-func (bq *BigQuery) createQuery(query string, queryOpts ...queryOption) (*bigquery.Query, error) {
-	qc := newQueryConfig()
-
-	for _, opt := range queryOpts {
-		err := opt(qc)
-		if err != nil {
-			return nil, err
-		}
-	}
-
+func (bq *BigQuery) createQuery(ctx context.Context, query string, qc *queryConfig) (*bigquery.Query, error) {
 	q := bq.Client.Query(query)
 
 	if qc.dstTable != nil {
-		q.QueryConfig.Dst = qc.dstTable
+		q.Dst = qc.dstTable
 	}
 
 	if qc.isLegacy {
 		q.UseLegacySQL = true
 	} else {
 		q.UseStandardSQL = true
+	}
+
+	if qc.isDryRun {
+		q.DryRun = true
 	}
 
 	q.CreateDisposition = qc.createDisposition

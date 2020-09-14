@@ -8,26 +8,51 @@ import (
 
 type queryConfig struct {
 	isLegacy          bool
+	isDryRun          bool
 	createDisposition bigquery.TableCreateDisposition
 	writeDisposition  bigquery.TableWriteDisposition
 	dstTable          *bigquery.Table
+	jobStatistics     *bigquery.JobStatistics
 }
 
 func newQueryConfig() *queryConfig {
 	return &queryConfig{
 		isLegacy:          false,
+		isDryRun:          false,
 		createDisposition: bigquery.CreateIfNeeded,
 		writeDisposition:  bigquery.WriteTruncate,
 		dstTable:          nil,
+		jobStatistics:     nil,
 	}
+}
+
+func createQueryConfig(queryOpts ...queryOption) (*queryConfig, error) {
+	qc := newQueryConfig()
+
+	for _, opt := range queryOpts {
+		err := opt(qc)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return qc, nil
 }
 
 type queryOption func(*queryConfig) error
 
 // QueryOptionIsLegacy returns queryOption instance with legacy sql enabled
-func QueryOptionIsLegacy(isLegacy bool) func(c *queryConfig) error {
+func QueryOptionIsLegacy() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
-		c.isLegacy = isLegacy
+		c.isLegacy = true
+		return nil
+	}
+}
+
+// QueryOptionIsDryRun returns queryOption instance with dryrun enabled
+func QueryOptionIsDryRun() func(c *queryConfig) error {
+	return func(c *queryConfig) error {
+		c.isDryRun = true
 		return nil
 	}
 }
@@ -68,6 +93,14 @@ func QueryOptionWriteAppend() func(c *queryConfig) error {
 func QueryOptionWriteEmpty() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		c.writeDisposition = bigquery.WriteEmpty
+		return nil
+	}
+}
+
+// QueryOptionSetJobStatisticsReference returns queryOption instance with JobStatistics reference
+func QueryOptionSetJobStatisticsReference(js *bigquery.JobStatistics) func(c *queryConfig) error {
+	return func(c *queryConfig) error {
+		c.jobStatistics = js
 		return nil
 	}
 }

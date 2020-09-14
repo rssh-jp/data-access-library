@@ -3,6 +3,8 @@ package bigquery
 import (
 	"context"
 	"testing"
+
+	"cloud.google.com/go/bigquery"
 )
 
 const (
@@ -36,6 +38,16 @@ func TestSuccess(t *testing.T) {
 		}
 
 		t.Log(cols, contents)
+	})
+
+	t.Run("Execute and jobstatistics", func(t *testing.T) {
+		js := new(bigquery.JobStatistics)
+		err := mainBQ.Execute(context.Background(), selectQuery, QueryOptionSetJobStatisticsReference(js), QueryOptionIsDryRun())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Logf("%+v\n", js)
 	})
 
 	t.Run("QueryCopyCreateIfNeededWriteTruncate", func(t *testing.T) {
