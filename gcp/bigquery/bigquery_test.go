@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	projectID    = "infra-falcon-262905"
-	subProjectID = "test-project01-289306"
+	projectID    = "test-project"
+	subProjectID = "test-project"
 	selectQuery  = "select name, age from `test_dataset.test_table`"
 )
 
