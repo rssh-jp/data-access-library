@@ -26,7 +26,7 @@ func newQueryConfig() *queryConfig {
 	}
 }
 
-func createQueryConfig(queryOpts ...queryOption) (*queryConfig, error) {
+func createQueryConfig(queryOpts ...QueryOption) (*queryConfig, error) {
 	qc := newQueryConfig()
 
 	for _, opt := range queryOpts {
@@ -39,9 +39,10 @@ func createQueryConfig(queryOpts ...queryOption) (*queryConfig, error) {
 	return qc, nil
 }
 
-type queryOption func(*queryConfig) error
+// QueryOption is functional option pattern queryoption
+type QueryOption func(*queryConfig) error
 
-// QueryOptionIsLegacy returns queryOption instance with legacy sql enabled
+// QueryOptionIsLegacy returns QueryOption instance with legacy sql enabled
 func QueryOptionIsLegacy() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		c.isLegacy = true
@@ -49,7 +50,7 @@ func QueryOptionIsLegacy() func(c *queryConfig) error {
 	}
 }
 
-// QueryOptionIsDryRun returns queryOption instance with dryrun enabled
+// QueryOptionIsDryRun returns QueryOption instance with dryrun enabled
 func QueryOptionIsDryRun() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		c.isDryRun = true
@@ -57,7 +58,7 @@ func QueryOptionIsDryRun() func(c *queryConfig) error {
 	}
 }
 
-// QueryOptionCreateIfNeeded returns queryOption instance with CreateIfNeeded specified for createDisposition
+// QueryOptionCreateIfNeeded returns QueryOption instance with CreateIfNeeded specified for createDisposition
 func QueryOptionCreateIfNeeded() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		c.createDisposition = bigquery.CreateIfNeeded
@@ -65,7 +66,7 @@ func QueryOptionCreateIfNeeded() func(c *queryConfig) error {
 	}
 }
 
-// QueryOptionCreateNever returns queryOption instance with CreateNever specified for createDisposition
+// QueryOptionCreateNever returns QueryOption instance with CreateNever specified for createDisposition
 func QueryOptionCreateNever() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		c.createDisposition = bigquery.CreateNever
@@ -73,7 +74,7 @@ func QueryOptionCreateNever() func(c *queryConfig) error {
 	}
 }
 
-// QueryOptionWriteTruncate returns queryOption instance with WriteTruncate specified for writeDisposition
+// QueryOptionWriteTruncate returns QueryOption instance with WriteTruncate specified for writeDisposition
 func QueryOptionWriteTruncate() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		c.writeDisposition = bigquery.WriteTruncate
@@ -81,7 +82,7 @@ func QueryOptionWriteTruncate() func(c *queryConfig) error {
 	}
 }
 
-// QueryOptionWriteAppend returns queryOption instance with WriteAppend specified for writeDisposition
+// QueryOptionWriteAppend returns QueryOption instance with WriteAppend specified for writeDisposition
 func QueryOptionWriteAppend() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		c.writeDisposition = bigquery.WriteAppend
@@ -89,7 +90,7 @@ func QueryOptionWriteAppend() func(c *queryConfig) error {
 	}
 }
 
-// QueryOptionWriteEmpty returns queryOption instance with WriteEmpty specified for writeDisposition
+// QueryOptionWriteEmpty returns QueryOption instance with WriteEmpty specified for writeDisposition
 func QueryOptionWriteEmpty() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		c.writeDisposition = bigquery.WriteEmpty
@@ -97,7 +98,7 @@ func QueryOptionWriteEmpty() func(c *queryConfig) error {
 	}
 }
 
-// QueryOptionSetJobStatisticsReference returns queryOption instance with JobStatistics reference
+// QueryOptionSetJobStatisticsReference returns QueryOption instance with JobStatistics reference
 func QueryOptionSetJobStatisticsReference(js *bigquery.JobStatistics) func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		c.jobStatistics = js
@@ -105,7 +106,7 @@ func QueryOptionSetJobStatisticsReference(js *bigquery.JobStatistics) func(c *qu
 	}
 }
 
-// QueryOptionDstTable returns queryOption instance with destination table
+// QueryOptionDstTable returns QueryOption instance with destination table
 func QueryOptionDstTable(bq *BigQuery, datasetID, tableID string) func(c *queryConfig) error {
 	return func(c *queryConfig) error {
 		ctx := context.Background()
