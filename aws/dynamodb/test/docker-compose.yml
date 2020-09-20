@@ -1,0 +1,18 @@
+version: "3"
+services:
+    dynamodb:
+        image: "amazon/dynamodb-local:latest"
+        ports:
+            - "8000:8000"
+
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+            - ../../../:/go/src/app
+        links:
+            - dynamodb
+        depends_on:
+            - dynamodb
+
