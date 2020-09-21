@@ -17,7 +17,7 @@ func main() {
 	log.Println("state:", 7)
 
 	cfg := aws.NewConfig()
-	cfg.WithEndpoint("http://localhost:8000")
+	cfg.WithEndpoint("http://dynamodb:8000")
 	cfg.WithRegion("ap-northeast-1")
 	cfg.WithCredentials(credentials.NewStaticCredentials("dummy", "dummy", "dummy"))
 	d, err := dynamodb.New(cfg)

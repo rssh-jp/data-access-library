@@ -98,10 +98,10 @@ func (d *DynamoDB) Get(key string) interface{} {
 	res, err := d.DynamoDB.GetItem(&dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"Artist": {
-				S: aws.String("Acme Band"),
+				S: aws.String("No One You Know"),
 			},
 			"SongTitle": {
-				S: aws.String("Happy Day"),
+				S: aws.String("Call Me Today"),
 			},
 		},
 		TableName: aws.String("Music"),
