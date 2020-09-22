@@ -21,10 +21,94 @@ func New(cfgs ...*aws.Config) (*DynamoDB, error) {
 		DynamoDB: dynamodb.New(sess),
 	}, nil
 }
+func (d *DynamoDB) CreateTable2(tableName string) error {
+	res, err := d.DynamoDB.CreateTable(&dynamodb.CreateTableInput{
+		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+			{
+				AttributeName: aws.String("key"),
+				AttributeType: aws.String("S"),
+			},
+		},
+		KeySchema: []*dynamodb.KeySchemaElement{
+			{
+				AttributeName: aws.String("key"),
+				KeyType:       aws.String("HASH"),
+			},
+		},
+		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(5),
+			WriteCapacityUnits: aws.Int64(5),
+		},
+		TableName: aws.String(tableName),
+	})
+	log.Println("+++", res, err)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *DynamoDB) ListTable() error {
+	res, err := d.DynamoDB.ListTables(&dynamodb.ListTablesInput{})
+	if err != nil {
+		return err
+	}
+
+	for _, tableName := range res.TableNames {
+		res, err := d.DynamoDB.DescribeTable(&dynamodb.DescribeTableInput{
+			TableName: tableName,
+		})
+
+		log.Println("---------", res, err)
+	}
+
+	return nil
+}
+
+func (d *DynamoDB) Get2(tableName, key string) (string, error) {
+	res, err := d.DynamoDB.GetItem(&dynamodb.GetItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"key": {
+				S: aws.String(key),
+			},
+		},
+		TableName: aws.String(tableName),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if item, ok := res.Item["value"]; !ok {
+		return "", nil
+	} else {
+		return *item.S, nil
+	}
+}
+
+func (d *DynamoDB) Set(tableName, key, value string) error {
+	res, err := d.DynamoDB.PutItem(&dynamodb.PutItemInput{
+		Item: map[string]*dynamodb.AttributeValue{
+			"key": {
+				S: aws.String(key),
+			},
+			"value": {
+				S: aws.String(value),
+			},
+		},
+		TableName: aws.String(tableName),
+	})
+	if err != nil {
+		return err
+	}
+
+	log.Println("res:", res)
+
+	return nil
+}
 
 func (d *DynamoDB) CreateTable() error {
-	log.Println("+++++++++++++", 1)
-	res, err := d.DynamoDB.CreateTable(&dynamodb.CreateTableInput{
+	_, err := d.DynamoDB.CreateTable(&dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
 				AttributeName: aws.String("Artist"),
@@ -51,20 +135,15 @@ func (d *DynamoDB) CreateTable() error {
 		},
 		TableName: aws.String("Music"),
 	})
-	log.Println("+++++++++++++", 2)
 	if err != nil {
 		return err
 	}
-	log.Println("+++++++++++++", 3)
-
-	log.Println(res, err)
 
 	return nil
 }
 
 func (d *DynamoDB) PutItem() error {
-	log.Println("----------", 1)
-	res, err := d.DynamoDB.PutItem(&dynamodb.PutItemInput{
+	_, err := d.DynamoDB.PutItem(&dynamodb.PutItemInput{
 		Item: map[string]*dynamodb.AttributeValue{
 			"AlbumTitle": {
 				S: aws.String("Somewhat Famous"),
@@ -79,23 +158,15 @@ func (d *DynamoDB) PutItem() error {
 		ReturnConsumedCapacity: aws.String("TOTAL"),
 		TableName:              aws.String("Music"),
 	})
-	log.Println("----------", 2)
 	if err != nil {
 		return err
 	}
-	log.Println("----------", 3)
-
-	log.Println(res, err)
 
 	return nil
 }
 
 func (d *DynamoDB) Get(key string) interface{} {
-	log.Println("key", key, key, key)
-
-	log.Println(d.DynamoDB)
-
-	res, err := d.DynamoDB.GetItem(&dynamodb.GetItemInput{
+	_, err := d.DynamoDB.GetItem(&dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"Artist": {
 				S: aws.String("No One You Know"),
@@ -106,8 +177,9 @@ func (d *DynamoDB) Get(key string) interface{} {
 		},
 		TableName: aws.String("Music"),
 	})
-
-	log.Println(res, err)
+	if err != nil {
+		return err
+	}
 
 	return ""
 }

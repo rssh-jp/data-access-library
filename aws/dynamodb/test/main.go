@@ -18,7 +18,8 @@ func main() {
 
 	cfg := aws.NewConfig()
 	cfg.WithEndpoint("http://dynamodb:8000")
-	cfg.WithRegion("ap-northeast-1")
+	//cfg.WithRegion("ap-northeast-1")
+	cfg.WithRegion("us-west-2")
 	cfg.WithCredentials(credentials.NewStaticCredentials("dummy", "dummy", "dummy"))
 	d, err := dynamodb.New(cfg)
 	if err != nil {
@@ -26,6 +27,15 @@ func main() {
 	}
 
 	d.CreateTable()
+	d.CreateTable2("nicetable")
+	d.ListTable()
+	d.Set("nicetable", "test_key", "test_value")
+	res, err := d.Get2("nicetable", "test_key")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("#################", res)
 
 	d.PutItem()
 
