@@ -21,6 +21,7 @@ func New(cfgs ...*aws.Config) (*DynamoDB, error) {
 		DynamoDB: dynamodb.New(sess),
 	}, nil
 }
+
 func (d *DynamoDB) CreateTable2(tableName string) error {
 	res, err := d.DynamoDB.CreateTable(&dynamodb.CreateTableInput{
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{

@@ -26,7 +26,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	d.CreateTable()
 	d.CreateTable2("nicetable")
 	d.ListTable()
 	d.Set("nicetable", "test_key", "test_value")
@@ -35,6 +34,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	d.CreateTable()
 	log.Println("#################", res)
 
 	d.PutItem()
