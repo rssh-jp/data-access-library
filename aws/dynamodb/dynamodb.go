@@ -1,9 +1,15 @@
 package dynamodb
 
 import (
+	"errors"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+)
+
+var (
+	ErrNotFound = errors.New("Not found")
 )
 
 type DynamoDB struct {
@@ -88,7 +94,7 @@ func (d *DynamoDB) Get(key string) (string, error) {
 	}
 
 	if item, ok := res.Item[d.DefaultValueName]; !ok {
-		return "", nil
+		return "", ErrNotFound
 	} else {
 		return *item.S, nil
 	}
