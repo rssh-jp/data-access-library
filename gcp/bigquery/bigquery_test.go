@@ -1,4 +1,4 @@
-package bigquery
+package bigquery_test
 
 import (
 	"context"
@@ -6,7 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"cloud.google.com/go/bigquery"
+	bq "cloud.google.com/go/bigquery"
+
+	"github.com/rssh-jp/data-access-library/gcp/bigquery"
 )
 
 const (
@@ -30,43 +32,43 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 func preprocess() error {
-	mainBQ, err := New(projectID)
+	mainBQ, err := bigquery.New(projectID)
 	if err != nil {
 		return err
 	}
 
-	subBQ, err := New(subProjectID)
+	subBQ, err := bigquery.New(subProjectID)
 	if err != nil {
 		return err
 	}
 
 	log.Println("CREATE DATASET main")
-	err = mainBQ.Client.Dataset("test_dataset2").Create(context.Background(), &bigquery.DatasetMetadata{})
+	err = mainBQ.Client.Dataset("test_dataset2").Create(context.Background(), &bq.DatasetMetadata{})
 	if err != nil {
 		return err
 	}
 
 	log.Println("CREATE DATASET sub")
-	err = subBQ.Client.Dataset("test_dataset2").Create(context.Background(), &bigquery.DatasetMetadata{})
+	err = subBQ.Client.Dataset("test_dataset2").Create(context.Background(), &bq.DatasetMetadata{})
 	if err != nil {
 		return err
 	}
 
 	log.Println("CREATE TABLE")
-	err = mainBQ.Client.Dataset("test_dataset2").Table("test_table").Create(context.Background(), &bigquery.TableMetadata{
-		Schema: bigquery.Schema{
-			&bigquery.FieldSchema{
+	err = mainBQ.Client.Dataset("test_dataset2").Table("test_table").Create(context.Background(), &bq.TableMetadata{
+		Schema: bq.Schema{
+			&bq.FieldSchema{
 				Name:     "id",
 				Required: true,
-				Type:     bigquery.IntegerFieldType,
+				Type:     bq.IntegerFieldType,
 			},
-			&bigquery.FieldSchema{
+			&bq.FieldSchema{
 				Name: "name",
-				Type: bigquery.StringFieldType,
+				Type: bq.StringFieldType,
 			},
-			&bigquery.FieldSchema{
+			&bq.FieldSchema{
 				Name: "age",
-				Type: bigquery.IntegerFieldType,
+				Type: bq.IntegerFieldType,
 			},
 		},
 	})
@@ -77,12 +79,12 @@ func preprocess() error {
 	return nil
 }
 func postprocess() error {
-	mainBQ, err := New(projectID)
+	mainBQ, err := bigquery.New(projectID)
 	if err != nil {
 		return err
 	}
 
-	subBQ, err := New(subProjectID)
+	subBQ, err := bigquery.New(subProjectID)
 	if err != nil {
 		return err
 	}
@@ -103,7 +105,7 @@ func postprocess() error {
 }
 
 func TestInsert(t *testing.T) {
-	bq, err := New(projectID)
+	bq, err := bigquery.New(projectID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,18 +121,18 @@ func TestInsert(t *testing.T) {
 func TestSuccess(t *testing.T) {
 	const selectQuery = "select id, name, age from `test_dataset2.test_table` order by id"
 
-	var mainBQ, subBQ *BigQuery
+	var mainBQ, subBQ *bigquery.BigQuery
 	var err error
 
 	t.Run("New", func(t *testing.T) {
 		t.Run("Main project", func(t *testing.T) {
-			mainBQ, err = New(projectID)
+			mainBQ, err = bigquery.New(projectID)
 			if err != nil {
 				t.Fatal(err)
 			}
 		})
 		t.Run("Sub project", func(t *testing.T) {
-			subBQ, err = New(subProjectID)
+			subBQ, err = bigquery.New(subProjectID)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -164,8 +166,8 @@ func TestSuccess(t *testing.T) {
 			}
 		})
 		t.Run("Dry run", func(t *testing.T) {
-			js := new(bigquery.JobStatistics)
-			_, _, err := mainBQ.Query(context.Background(), selectQuery, QueryOptionSetJobStatisticsReference(js), QueryOptionIsDryRun())
+			js := new(bq.JobStatistics)
+			_, _, err := mainBQ.Query(context.Background(), selectQuery, bigquery.QueryOptionSetJobStatisticsReference(js), bigquery.QueryOptionIsDryRun())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -186,8 +188,8 @@ func TestSuccess(t *testing.T) {
 			}
 		})
 		t.Run("Dry run", func(t *testing.T) {
-			js := new(bigquery.JobStatistics)
-			err := mainBQ.Execute(context.Background(), selectQuery, QueryOptionSetJobStatisticsReference(js), QueryOptionIsDryRun())
+			js := new(bq.JobStatistics)
+			err := mainBQ.Execute(context.Background(), selectQuery, bigquery.QueryOptionSetJobStatisticsReference(js), bigquery.QueryOptionIsDryRun())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -204,14 +206,14 @@ func TestSuccess(t *testing.T) {
 				t.Run("CreateIfNeeded", func(t *testing.T) {
 					const confirmQuery = "select id, name, age from `test_dataset2.test_table2` order by id"
 
-					copyOptions1 := []QueryOption{
-						QueryOptionDstTable(mainBQ, "test_dataset2", "test_table2"),
+					copyOptions1 := []bigquery.QueryOption{
+						bigquery.QueryOptionDstTable(mainBQ, "test_dataset2", "test_table2"),
 					}
 
-					copyOptions2 := append(copyOptions1, QueryOptionCreateIfNeeded())
+					copyOptions2 := append(copyOptions1, bigquery.QueryOptionCreateIfNeeded())
 
 					t.Run("WriteAppend", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteAppend())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteAppend())...)
 						if err != nil {
 							t.Fatal(err)
 						}
@@ -241,7 +243,7 @@ func TestSuccess(t *testing.T) {
 						}
 					})
 					t.Run("WriteTruncate", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteTruncate())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteTruncate())...)
 						if err != nil {
 							t.Fatal(err)
 						}
@@ -271,7 +273,7 @@ func TestSuccess(t *testing.T) {
 						}
 					})
 					t.Run("WriteEmpty", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteEmpty())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteEmpty())...)
 						if err == nil {
 							t.Error("Bug. Table already contains data. But returns not error")
 						}
@@ -280,25 +282,25 @@ func TestSuccess(t *testing.T) {
 				t.Run("CreateNever", func(t *testing.T) {
 					const confirmQuery = "select id, name, age from `test_dataset2.test_table3` order by id"
 
-					copyOptions1 := []QueryOption{
-						QueryOptionDstTable(mainBQ, "test_dataset2", "test_table3"),
+					copyOptions1 := []bigquery.QueryOption{
+						bigquery.QueryOptionDstTable(mainBQ, "test_dataset2", "test_table3"),
 					}
 
-					copyOptions2 := append(copyOptions1, QueryOptionCreateNever())
+					copyOptions2 := append(copyOptions1, bigquery.QueryOptionCreateNever())
 					t.Run("WriteAppend", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteAppend())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteAppend())...)
 						if err == nil {
 							t.Error("Bug. Table never create. But returns not error")
 						}
 					})
 					t.Run("WriteTruncate", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteTruncate())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteTruncate())...)
 						if err == nil {
 							t.Error("Bug. Table never create. But returns not error")
 						}
 					})
 					t.Run("WriteEmpty", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteEmpty())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteEmpty())...)
 						if err == nil {
 							t.Error("Bug. Table already contains data. But returns not error")
 						}
@@ -309,14 +311,14 @@ func TestSuccess(t *testing.T) {
 				t.Run("CreateIfNeeded", func(t *testing.T) {
 					const confirmQuery = "select id, name, age from `test_dataset2.test_table2` order by id"
 
-					copyOptions1 := []QueryOption{
-						QueryOptionDstTable(subBQ, "test_dataset2", "test_table2"),
+					copyOptions1 := []bigquery.QueryOption{
+						bigquery.QueryOptionDstTable(subBQ, "test_dataset2", "test_table2"),
 					}
 
-					copyOptions2 := append(copyOptions1, QueryOptionCreateIfNeeded())
+					copyOptions2 := append(copyOptions1, bigquery.QueryOptionCreateIfNeeded())
 
 					t.Run("WriteAppend", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteAppend())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteAppend())...)
 						if err != nil {
 							t.Fatal(err)
 						}
@@ -346,7 +348,7 @@ func TestSuccess(t *testing.T) {
 						}
 					})
 					t.Run("WriteTruncate", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteTruncate())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteTruncate())...)
 						if err != nil {
 							t.Fatal(err)
 						}
@@ -376,7 +378,7 @@ func TestSuccess(t *testing.T) {
 						}
 					})
 					t.Run("WriteEmpty", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteEmpty())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteEmpty())...)
 						if err == nil {
 							t.Error("Bug. Table already contains data. But returns not error")
 						}
@@ -385,25 +387,25 @@ func TestSuccess(t *testing.T) {
 				t.Run("CreateNever", func(t *testing.T) {
 					const confirmQuery = "select id, name, age from `test_dataset2.test_table2` order by id"
 
-					copyOptions1 := []QueryOption{
-						QueryOptionDstTable(subBQ, "test_dataset2", "test_table3"),
+					copyOptions1 := []bigquery.QueryOption{
+						bigquery.QueryOptionDstTable(subBQ, "test_dataset2", "test_table3"),
 					}
 
-					copyOptions2 := append(copyOptions1, QueryOptionCreateNever())
+					copyOptions2 := append(copyOptions1, bigquery.QueryOptionCreateNever())
 					t.Run("WriteAppend", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteAppend())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteAppend())...)
 						if err == nil {
 							t.Error("Bug. Table never create. But returns not error")
 						}
 					})
 					t.Run("WriteTruncate", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteTruncate())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteTruncate())...)
 						if err == nil {
 							t.Error("Bug. Table never create. But returns not error")
 						}
 					})
 					t.Run("WriteEmpty", func(t *testing.T) {
-						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, QueryOptionWriteEmpty())...)
+						err = mainBQ.Execute(context.Background(), selectQuery, append(copyOptions2, bigquery.QueryOptionWriteEmpty())...)
 						if err == nil {
 							t.Error("Bug. Table already contains data. But returns not error")
 						}
