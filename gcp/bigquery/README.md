@@ -47,7 +47,7 @@ import (
 )
 
 func main() {
-	const projectID = "infra-falcon-262905"
+	const projectID = "own-project-id"
 	const query = "select name, age from `test_dataset.test_table`"
 
 	ctx := context.Background()
@@ -77,7 +77,7 @@ import (
 )
 
 func main() {
-	const projectID = "infra-falcon-262905"
+	const projectID = "own-project-id"
 	const query = "select name, age from `test_dataset.test_table`"
 
 	ctx := context.Background()
