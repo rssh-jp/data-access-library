@@ -59,6 +59,37 @@ func (bq *BigQuery) Execute(ctx context.Context, query string, queryOpts ...Quer
 	return nil
 }
 
+// ExecuteAsync is execute query asynchronous. returns error
+func (bq *BigQuery) ExecuteAsync(ctx context.Context, query string, queryOpts ...QueryOption) (string, error) {
+	qc, err := createQueryConfig(queryOpts...)
+	if err != nil {
+		return "", err
+	}
+
+	q, err := bq.createQuery(ctx, query, qc)
+	if err != nil {
+		return "", err
+	}
+
+	if qc.isDryRun {
+		job, err := q.Run(ctx)
+		if err != nil {
+			return "", err
+		}
+
+		*qc.jobStatistics = *job.LastStatus().Statistics
+
+		return "", nil
+	}
+
+	job, err := q.Run(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return job.ID(), nil
+}
+
 // Query is execute query. returns columns, contents, error
 func (bq *BigQuery) Query(ctx context.Context, query string, queryOpts ...QueryOption) (columns []string, contents [][]string, err error) {
 	qc, err := createQueryConfig(queryOpts...)
