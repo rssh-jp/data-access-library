@@ -414,4 +414,16 @@ func TestSuccess(t *testing.T) {
 			})
 		})
 	})
+	t.Run("ExecuteAsync", func(t *testing.T) {
+		t.Run("Vanilla", func(t *testing.T) {
+			jobID, err := mainBQ.ExecuteAsync(context.Background(), selectQuery)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if jobID == "" {
+				t.Errorf("Could not found job_id.")
+			}
+		})
+	})
 }
