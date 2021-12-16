@@ -28,6 +28,16 @@ func New(projectID string, opts ...option.ClientOption) (*BigQuery, error) {
 	}, nil
 }
 
+// JobStatus returns job status by job id
+func (bq *BigQuery) JobStatus(ctx context.Context, jobID string) (*bigquery.JobStatus, error) {
+	job, err := bq.Client.JobFromID(ctx, jobID)
+	if err != nil {
+		return nil, err
+	}
+
+	return job.Status(ctx)
+}
+
 // Execute is execute query. returns error
 func (bq *BigQuery) Execute(ctx context.Context, query string, queryOpts ...QueryOption) error {
 	qc, err := createQueryConfig(queryOpts...)
