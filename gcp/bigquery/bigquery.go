@@ -172,8 +172,13 @@ func (bq *BigQuery) createQuery(ctx context.Context, query string, qc *queryConf
 		q.DryRun = true
 	}
 
-	q.CreateDisposition = qc.createDisposition
-	q.WriteDisposition = qc.writeDisposition
+	if qc.createDisposition != nil {
+		q.CreateDisposition = *qc.createDisposition
+	}
+
+	if qc.writeDisposition != nil {
+		q.WriteDisposition = qc.writeDisposition
+	}
 
 	return q, nil
 }

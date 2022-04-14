@@ -9,8 +9,8 @@ import (
 type queryConfig struct {
 	isLegacy          bool
 	isDryRun          bool
-	createDisposition bigquery.TableCreateDisposition
-	writeDisposition  bigquery.TableWriteDisposition
+	createDisposition *bigquery.TableCreateDisposition
+	writeDisposition  *bigquery.TableWriteDisposition
 	dstTable          *bigquery.Table
 	jobStatistics     *bigquery.JobStatistics
 }
@@ -19,8 +19,8 @@ func newQueryConfig() *queryConfig {
 	return &queryConfig{
 		isLegacy:          false,
 		isDryRun:          false,
-		createDisposition: bigquery.CreateIfNeeded,
-		writeDisposition:  bigquery.WriteTruncate,
+		createDisposition: nil,
+		writeDisposition:  nil,
 		dstTable:          nil,
 		jobStatistics:     nil,
 	}
@@ -61,7 +61,8 @@ func QueryOptionIsDryRun() func(c *queryConfig) error {
 // QueryOptionCreateIfNeeded returns QueryOption instance with CreateIfNeeded specified for createDisposition
 func QueryOptionCreateIfNeeded() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
-		c.createDisposition = bigquery.CreateIfNeeded
+		s := bigquery.CreateIfNeeded
+		c.createDisposition = &s
 		return nil
 	}
 }
@@ -69,7 +70,8 @@ func QueryOptionCreateIfNeeded() func(c *queryConfig) error {
 // QueryOptionCreateNever returns QueryOption instance with CreateNever specified for createDisposition
 func QueryOptionCreateNever() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
-		c.createDisposition = bigquery.CreateNever
+		s := bigquery.CreateNever
+		c.createDisposition = &s
 		return nil
 	}
 }
@@ -77,7 +79,8 @@ func QueryOptionCreateNever() func(c *queryConfig) error {
 // QueryOptionWriteTruncate returns QueryOption instance with WriteTruncate specified for writeDisposition
 func QueryOptionWriteTruncate() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
-		c.writeDisposition = bigquery.WriteTruncate
+		s := bigquery.WriteTruncate
+		c.writeDisposition = &s
 		return nil
 	}
 }
@@ -85,7 +88,8 @@ func QueryOptionWriteTruncate() func(c *queryConfig) error {
 // QueryOptionWriteAppend returns QueryOption instance with WriteAppend specified for writeDisposition
 func QueryOptionWriteAppend() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
-		c.writeDisposition = bigquery.WriteAppend
+		s := bigquery.WriteAppend
+		c.writeDisposition = &s
 		return nil
 	}
 }
@@ -93,7 +97,8 @@ func QueryOptionWriteAppend() func(c *queryConfig) error {
 // QueryOptionWriteEmpty returns QueryOption instance with WriteEmpty specified for writeDisposition
 func QueryOptionWriteEmpty() func(c *queryConfig) error {
 	return func(c *queryConfig) error {
-		c.writeDisposition = bigquery.WriteEmpty
+		s := bigquery.WriteEmpty
+		c.writeDisposition = &s
 		return nil
 	}
 }
