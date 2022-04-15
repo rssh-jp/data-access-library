@@ -177,7 +177,7 @@ func (bq *BigQuery) createQuery(ctx context.Context, query string, qc *queryConf
 	}
 
 	if qc.writeDisposition != nil {
-		q.WriteDisposition = qc.writeDisposition
+		q.WriteDisposition = *qc.writeDisposition
 	}
 
 	return q, nil
